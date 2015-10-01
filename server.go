@@ -11,6 +11,7 @@ type Server struct {
     protocol string
     port int
     commands map[string]Command
+    storage MapStorage
 }
 
 func (self Server) Start() bool {
@@ -44,7 +45,7 @@ func (self Server) serve(conn net.Conn) {
         parts := strings.Split(line, " ")
 
         command, ok := self.commands[parts[0]]
-        if !ok || !command.Run(conn, parts[1:]) {
+        if !ok || !command.Run(conn, self.storage, parts[1:]) {
             conn.Write([]byte("ERROR\n"))
         }
     }
@@ -55,5 +56,6 @@ func NewServer() *Server {
         protocol: "tcp",
         port: 11211,
         commands: map[string]Command{},
+	storage: MapStorage{},
     }
 }
