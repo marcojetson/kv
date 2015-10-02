@@ -1,14 +1,22 @@
 package storage
 
-type MapStorage map[string]([]byte)
+import (
+    "github.com/kv/kv/core"
+)
 
-func (m MapStorage) Get(k string) ([]byte, bool) {
+type MapStorage map[string]core.Value
+
+func (m MapStorage) Get(k string) (core.Value, bool) {
     v, ok := m[k]
     return v, ok
 }
 
-func (m MapStorage) Set(k string, v []byte) {
-    m[k] = v
+func (m MapStorage) Set(k string, flags int, expirationTime int, data []byte) {
+    m[k] = core.Value{
+    	Flags: flags,
+    	ExpirationTime: expirationTime,
+    	Data: data,
+    }
 }
 
 func (m MapStorage) Delete(k string) bool {

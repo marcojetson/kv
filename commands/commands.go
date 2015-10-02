@@ -2,17 +2,27 @@ package commands
 
 import (
     "net"
+    "strconv"
     "github.com/kv/kv/core"
 )
 
 func Set(conn net.Conn, storage core.Storage, args []string) bool {
-     if len(args) != 2 {
-         return false
-     }     
+    argc := len(args)
 
-     storage.Set(args[0], []byte(args[1]))
+    if argc != 4 && argc != 5 {
+        return false
+    }
 
-     return true
+    flags, _ := strconv.Atoi(args[1])
+    expirationTime, _ := strconv.Atoi(args[2])
+
+    storage.Set(args[0], flags, expirationTime, []byte("data"))
+
+    if argc == 4 {
+        conn.Write([]byte("STORED\r\n"))
+    }
+
+    return true
 }
 
 func Get(conn net.Conn, storage core.Storage, args []string) bool {
@@ -28,7 +38,7 @@ func Get(conn net.Conn, storage core.Storage, args []string) bool {
         }
 
         conn.Write([]byte("VALUE " + k + "\r\n"))
-        conn.Write(r)
+        conn.Write(r.Data)
         conn.Write([]byte("\r\n"))
     }
     
