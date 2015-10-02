@@ -1,9 +1,9 @@
 package main
 
 import (
-    "./commands"
-    "./server"
-    "./storage"
+    "github.com/kv/kv/commands"
+    "github.com/kv/kv/server"
+    "github.com/kv/kv/storage"
 )
 
 func main() {

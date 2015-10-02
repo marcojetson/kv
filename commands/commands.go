@@ -2,7 +2,7 @@ package commands
 
 import (
     "net"
-    "../core"
+    "github.com/kv/kv/core"
 )
 
 func Set(conn net.Conn, storage core.Storage, args []string) bool {
