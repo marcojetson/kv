@@ -4,10 +4,12 @@ import (
     "github.com/kv/kv/commands"
     "github.com/kv/kv/server"
     "github.com/kv/kv/storage"
+    "github.com/kv/kv/config"
 )
 
 func main() {
-    s := server.NewServer(storage.MapStorage{})
+    c := config.ReadConfig("config.kv")
+    s := server.NewServer(storage.MapStorage{}, c)
 
     s.Commands["set"]  = commands.Set
     s.Commands["get"]  = commands.Get
