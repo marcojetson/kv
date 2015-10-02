@@ -5,7 +5,7 @@ import (
     "net"
     "strconv"
     "strings"
-    "kv/core"
+    "../core"
 )
 
 type Server struct {
