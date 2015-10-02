@@ -1,21 +1,22 @@
-package main
+package server
 
 import (
     "bufio"
     "net"
     "strconv"
     "strings"
+    "kv/core"
 )
 
 type Server struct {
-    protocol string
-    port int
-    commands map[string]Command
-    storage MapStorage
+    Protocol string
+    Port int
+    Commands map[string]core.Command
+    Storage core.Storage
 }
 
 func (self Server) Start() bool {
-    server, err := net.Listen(self.protocol, ":" + strconv.Itoa(self.port))
+    server, err := net.Listen(self.Protocol, ":" + strconv.Itoa(self.Port))
     if err != nil {
         panic("Failed to start")
     }
@@ -35,7 +36,7 @@ func (self Server) Start() bool {
 func (self Server) serve(conn net.Conn) {
     bufr := bufio.NewReader(conn)
 
-    for {   
+    for {
         line, err := bufr.ReadString('\n')
         if err != nil {
             return
@@ -44,18 +45,19 @@ func (self Server) serve(conn net.Conn) {
         line = strings.TrimSpace(line)
         parts := strings.Split(line, " ")
 
-        command, ok := self.commands[parts[0]]
-        if !ok || !command.Run(conn, self.storage, parts[1:]) {
-            conn.Write([]byte("ERROR\n"))
+        command, ok := self.Commands[parts[0]]
+
+        if !ok || !command(conn, self.Storage, parts[1:]) {
+            conn.Write([]byte("ERROR\r\n"))
         }
     }
 }
 
-func NewServer() *Server {
+func NewServer(storage core.Storage) *Server {
     return &Server{
-        protocol: "tcp",
-        port: 11211,
-        commands: map[string]Command{},
-	storage: MapStorage{},
+        Protocol: "tcp",
+        Port: 11211,
+        Commands: map[string]core.Command{},
+        Storage: storage,
     }
 }
