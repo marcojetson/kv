@@ -1,10 +1,12 @@
 package core
 
-import (
-    "net"
-)
+type Command func (storage Storage, conn Conn, args []string) bool
 
-type Command func (conn net.Conn, storage Storage, args []string) bool
+type Conn interface {
+    Read() (string, error)
+    Write(s string)
+    Close()
+}
 
 type Storage interface {
     Get(k string) (Value, bool)

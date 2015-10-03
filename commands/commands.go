@@ -1,12 +1,11 @@
 package commands
 
 import (
-    "net"
     "strconv"
     "github.com/kv/kv/core"
 )
 
-func Set(conn net.Conn, storage core.Storage, args []string) bool {
+func Set(storage core.Storage, conn core.Conn, args []string) bool {
     argc := len(args)
 
     if argc != 4 && argc != 5 {
@@ -15,17 +14,28 @@ func Set(conn net.Conn, storage core.Storage, args []string) bool {
 
     flags, _ := strconv.Atoi(args[1])
     expirationTime, _ := strconv.Atoi(args[2])
+    bytes, _ := strconv.Atoi(args[3])
 
-    storage.Set(args[0], flags, expirationTime, []byte("data"))
+    data, err := conn.Read()
+    if err != nil {
+        return false
+    }
+
+    if len(data) != bytes {
+        conn.Write("CLIENT_ERROR bad data chunk")
+        return false
+    }
+
+    storage.Set(args[0], flags, expirationTime, []byte(data))
 
     if argc == 4 {
-        conn.Write([]byte("STORED\r\n"))
+        conn.Write("STORED")
     }
 
     return true
 }
 
-func Get(conn net.Conn, storage core.Storage, args []string) bool {
+func Get(storage core.Storage, conn core.Conn, args []string) bool {
     if len(args) < 1 {
         return false
     }
@@ -37,17 +47,19 @@ func Get(conn net.Conn, storage core.Storage, args []string) bool {
             continue
         }
 
-        conn.Write([]byte("VALUE " + k + "\r\n"))
-        conn.Write(r.Data)
-        conn.Write([]byte("\r\n"))
+        flags := strconv.Itoa(r.Flags)
+        bytes := strconv.Itoa(len(r.Data))
+
+        conn.Write("VALUE " + k + " " + flags + " " + bytes + " $CAS")
+        conn.Write(string(r.Data))
     }
     
-    conn.Write([]byte("END\r\n"))
+    conn.Write("END")
 
     return true
 }
 
-func Delete(conn net.Conn, storage core.Storage, args []string) bool {
+func Delete(storage core.Storage, conn core.Conn, args []string) bool {
     argc := len(args)
 
     if argc != 1 && argc != 2 {
@@ -58,16 +70,16 @@ func Delete(conn net.Conn, storage core.Storage, args []string) bool {
 
     if argc == 1 {
         if r {
-            conn.Write([]byte("DELETED\r\n"))
+            conn.Write("DELETED")
         } else {
-            conn.Write([]byte("NOT_FOUND\r\n"))
+            conn.Write("NOT_FOUND")
         }
     }
 
     return true
 }
 
-func FlushAll(conn net.Conn, storage core.Storage, args []string) bool {
+func FlushAll(storage core.Storage, conn core.Conn, args []string) bool {
     argc := len(args)
 
     if argc != 0 && argc != 1 {
@@ -77,23 +89,23 @@ func FlushAll(conn net.Conn, storage core.Storage, args []string) bool {
     storage.FlushAll()
 
     if argc == 0 {
-        conn.Write([]byte("OK\r\n"))
+        conn.Write("OK")
     }
 
     return true
 }
 
 
-func Version(conn net.Conn, storage core.Storage, args []string) bool {
+func Version(storage core.Storage, conn core.Conn, args []string) bool {
     if len(args) != 0 {
          return false
      }
 
-    conn.Write([]byte("VERSION x\r\n"))
+    conn.Write("VERSION x")
     return true
 }
 
-func Quit(conn net.Conn, storage core.Storage, args []string) bool {
+func Quit(storage core.Storage, conn core.Conn, args []string) bool {
     if len(args) != 0 {
          return false
      }
