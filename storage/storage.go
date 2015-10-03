@@ -20,7 +20,7 @@ func (m MapStorage) Get(k string) (core.Value, bool) {
 }
 
 func (m MapStorage) Set(k string, flags int, expirationTime int, data []byte) {
-    if expirationTime > 0 && expirationTime <= 60 * 60 * 24 * 30{
+    if expirationTime > 0 && expirationTime <= 60 * 60 * 24 * 30 {
        expirationTime += int(time.Now().Unix())
     }
 
@@ -44,7 +44,7 @@ func (m MapStorage) FlushAll() {
 }
 
 func (m MapStorage) Incr(k string, offset uint64) (uint64, bool, bool) {
-    v, ok := m[k]
+    v, ok := m.Get(k)
 
     if !ok {
         return 0, false, false
@@ -68,7 +68,7 @@ func (m MapStorage) Incr(k string, offset uint64) (uint64, bool, bool) {
 }
 
 func (m MapStorage) Decr(k string, offset uint64) (uint64, bool, bool) {
-    v, ok := m[k]
+    v, ok := m.Get(k)
 
     if !ok {
         return 0, false, false
@@ -89,4 +89,22 @@ func (m MapStorage) Decr(k string, offset uint64) (uint64, bool, bool) {
     m[k] = v
 
     return i, true, true
+}
+
+func (m MapStorage) Touch(k string, expirationTime int) bool {
+    v, ok := m.Get(k)
+
+    if !ok {
+        return false
+    }
+
+    if expirationTime > 0 && expirationTime <= 60 * 60 * 24 * 30 {
+       expirationTime += int(time.Now().Unix())
+    }
+
+    v.ExpirationTime = expirationTime
+
+    m[k] = v
+
+    return true
 }

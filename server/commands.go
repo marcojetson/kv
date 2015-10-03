@@ -125,7 +125,7 @@ func Incr(server Server, conn Conn, args []string) bool {
     v, found, valid := server.Storage.Incr(args[0], offset)
 
     if !found {
-        conn.Write("NOT FOUND")
+        conn.Write("NOT_FOUND")
         return true
     }
 
@@ -148,7 +148,7 @@ func Decr(server Server, conn Conn, args []string) bool {
     v, found, valid := server.Storage.Decr(args[0], offset)
 
     if !found {
-        conn.Write("NOT FOUND")
+        conn.Write("NOT_FOUND")
         return true
     }
 
@@ -158,5 +158,23 @@ func Decr(server Server, conn Conn, args []string) bool {
     }
 
     conn.Write(strconv.FormatUint(v, 10))
+    return true
+}
+
+func Touch(server Server, conn Conn, args []string) bool {
+    if len(args) != 2 {
+         return false
+     }
+
+    expirationTime, _ := strconv.Atoi(args[1])
+
+    ok := server.Storage.Touch(args[0], expirationTime)
+
+    if !ok {
+        conn.Write("NOT_FOUND")
+        return true
+    }
+
+    conn.Write("TOUCHED")
     return true
 }

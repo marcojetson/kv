@@ -19,6 +19,7 @@ func main() {
     s.Commands["quit"] = server.Quit
     s.Commands["incr"] = server.Incr
     s.Commands["decr"] = server.Decr
+    s.Commands["touch"] = server.Touch
 
     s.Start()
 }

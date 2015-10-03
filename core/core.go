@@ -7,6 +7,7 @@ type Storage interface {
     FlushAll()
     Incr(k string, offset uint64) (uint64, bool, bool)
     Decr(k string, offset uint64) (uint64, bool, bool)
+    Touch(k string, expirationTime int) bool
 }
 
 type Value struct {
