@@ -17,6 +17,8 @@ func main() {
     s.Commands["flush_all"]  = server.FlushAll
     s.Commands["version"] = server.Version
     s.Commands["quit"] = server.Quit
+    s.Commands["incr"] = server.Incr
+    s.Commands["decr"] = server.Decr
 
     s.Start()
 }

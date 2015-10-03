@@ -114,3 +114,49 @@ func Quit(server Server, conn Conn, args []string) bool {
     conn.Close()
     return true
 }
+
+func Incr(server Server, conn Conn, args []string) bool {
+    if len(args) != 2 {
+         return false
+     }
+
+    offset, _ := strconv.ParseUint(args[1], 10, 64)
+
+    v, found, valid := server.Storage.Incr(args[0], offset)
+
+    if !found {
+        conn.Write("NOT FOUND")
+        return true
+    }
+
+    if !valid {
+        conn.Write("CLIENT_ERROR not a valid value")
+        return true
+    }
+
+    conn.Write(strconv.FormatUint(v, 10))
+    return true
+}
+
+func Decr(server Server, conn Conn, args []string) bool {
+    if len(args) != 2 {
+         return false
+     }
+
+    offset, _ := strconv.ParseUint(args[1], 10, 64)
+
+    v, found, valid := server.Storage.Decr(args[0], offset)
+
+    if !found {
+        conn.Write("NOT FOUND")
+        return true
+    }
+
+    if !valid {
+        conn.Write("CLIENT_ERROR not a valid value")
+        return true
+    }
+
+    conn.Write(strconv.FormatUint(v, 10))
+    return true
+}

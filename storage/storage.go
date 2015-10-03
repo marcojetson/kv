@@ -3,6 +3,7 @@ package storage
 import (
     "github.com/kv/kv/core"
     "time"
+    "strconv"
 )
 
 type MapStorage map[string]core.Value
@@ -40,4 +41,52 @@ func (m MapStorage) FlushAll() {
     for k := range m {
         delete(m, k)
     }
+}
+
+func (m MapStorage) Incr(k string, offset uint64) (uint64, bool, bool) {
+    v, ok := m[k]
+
+    if !ok {
+        return 0, false, false
+    }
+
+    data := v.Data
+
+    i, err := strconv.ParseUint(string(data), 10, 64)
+
+    if err != nil {
+        return 0, true, false
+    }
+
+    i += offset
+
+    v.Data = []byte(strconv.FormatUint(i, 10))
+
+    m[k] = v
+
+    return i, true, true
+}
+
+func (m MapStorage) Decr(k string, offset uint64) (uint64, bool, bool) {
+    v, ok := m[k]
+
+    if !ok {
+        return 0, false, false
+    }
+
+    data := v.Data
+
+    i, err := strconv.ParseUint(string(data), 10, 64)
+
+    if err != nil {
+        return 0, true, false
+    }
+
+    i -= offset
+
+    v.Data = []byte(strconv.FormatUint(i, 10))
+
+    m[k] = v
+
+    return i, true, true
 }

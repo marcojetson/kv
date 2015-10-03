@@ -5,6 +5,8 @@ type Storage interface {
     Delete(k string) bool
     Set(k string, flags int, expirationTime int, data []byte)
     FlushAll()
+    Incr(k string, offset uint64) (uint64, bool, bool)
+    Decr(k string, offset uint64) (uint64, bool, bool)
 }
 
 type Value struct {
