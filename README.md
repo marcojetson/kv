@@ -1,7 +1,7 @@
 kv
 ==
 
-Memcached implementation in Go.
+A naive Memcached implementation in Go.
 
 [![Build Status](https://travis-ci.org/kv/kv.svg?branch=master)](https://travis-ci.org/kv/kv)
 
