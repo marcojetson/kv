@@ -7,6 +7,8 @@ type Storage interface {
     FlushAll()
     Delta(k string, negative bool, offset uint64) (uint64, bool, bool)
     Touch(k string, expirationTime int) bool
+    Append(k string, data []byte) bool
+    Prepend(k string, data []byte) bool
 }
 
 type Value struct {

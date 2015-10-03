@@ -89,3 +89,31 @@ func (m MapStorage) Touch(k string, expirationTime int) bool {
 
     return true
 }
+
+func (m MapStorage) Append(k string, data []byte) bool {
+    v, ok := m.Get(k)
+
+    if !ok {
+        return false
+    }
+
+    v.Data = append(v.Data, data...)
+
+    m[k] = v
+
+    return true
+}
+
+func (m MapStorage) Prepend(k string, data []byte) bool {
+    v, ok := m.Get(k)
+
+    if !ok {
+        return false
+    }
+
+    v.Data = append(data, v.Data...)
+
+    m[k] = v
+
+    return true
+}

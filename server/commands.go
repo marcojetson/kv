@@ -106,6 +106,68 @@ func Replace(server Server, conn Conn, args []string) bool {
 	return true
 }
 
+func Append(server Server, conn Conn, args []string) bool {
+	argc := len(args)
+
+	if argc != 4 && argc != 5 {
+		return false
+	}
+
+	bytes, _ := strconv.Atoi(args[3])
+
+	data, err := conn.Read()
+	if err != nil {
+		return false
+	}
+
+	if len(data) != bytes {
+		conn.Write("CLIENT_ERROR bad data chunk")
+		return false
+	}
+
+	if ok := server.Storage.Append(args[0], []byte(data)); !ok {
+        conn.Write("NOT_STORED")
+        return true
+    }
+
+	if argc == 4 {
+		conn.Write("STORED")
+	}
+
+	return true
+}
+
+func Prepend(server Server, conn Conn, args []string) bool {
+	argc := len(args)
+
+	if argc != 4 && argc != 5 {
+		return false
+	}
+
+	bytes, _ := strconv.Atoi(args[3])
+
+	data, err := conn.Read()
+	if err != nil {
+		return false
+	}
+
+	if len(data) != bytes {
+		conn.Write("CLIENT_ERROR bad data chunk")
+		return false
+	}
+
+	if ok := server.Storage.Prepend(args[0], []byte(data)); !ok {
+        conn.Write("NOT_STORED")
+        return true
+    }
+
+	if argc == 4 {
+		conn.Write("STORED")
+	}
+
+	return true
+}
+
 func Get(server Server, conn Conn, args []string) bool {
 	if len(args) < 1 {
 		return false
