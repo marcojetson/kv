@@ -3,6 +3,7 @@ package main
 import (
     "strconv"
     "testing"
+    "time"
     "github.com/bradfitz/gomemcache/memcache"
 )
 
@@ -50,6 +51,37 @@ func TestDelete(t *testing.T) {
 
     if err == nil {
         t.Fatalf("Expecting error retrieving foo after delete")
+    }
+}
+
+func TestSetExpiration(t *testing.T) {
+    err := mc.Set(&memcache.Item{Key: "foo", Value: []byte("bar"), Expiration: 2})
+
+    if err != nil {
+        t.Fatalf("Set expiration foo = bar returned error " + err.Error())
+    }
+}
+
+func TestGetExpiration(t *testing.T) {
+    i, err := mc.Get("foo")
+
+    if err != nil {
+        t.Fatalf("Get foo returned error " + err.Error())
+    }
+
+    v := string(i.Value)
+
+    if v != "bar" {
+        t.Fatalf("Expecting foo to be bar but " + v + " found")
+    }
+}
+
+func TestGetExpired(t *testing.T) {
+    time.Sleep(3 * time.Second)
+    _, err := mc.Get("foo")
+
+    if err == nil {
+        t.Fatalf("Expecting error retrieving foo after expiration")
     }
 }
 
