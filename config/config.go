@@ -19,11 +19,11 @@ func ReadConfig(name string) Config {
 
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
-    	line := scanner.Text()
+        line := scanner.Text()
         vals := strings.SplitN(line, "=", 2)
-	key := strings.TrimSpace(vals[0])
-	value := strings.TrimSpace(vals[1])
-	r[key] = value
+        key := strings.TrimSpace(vals[0])
+        value := strings.TrimSpace(vals[1])
+        r[key] = value
     }
 
     if err := scanner.Err(); err != nil {
@@ -34,6 +34,16 @@ func ReadConfig(name string) Config {
 }
 
 type Config map[string]string
+
+func (c Config) GetString(k string, def string) string {
+    v, ok := c[k]
+    
+    if !ok {
+        return def
+    }
+
+    return v
+}
 
 func (c Config) GetInt(k string, def int) int {
     v, ok := c[k]
