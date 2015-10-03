@@ -51,7 +51,7 @@ func Get(server Server, conn Conn, args []string) bool {
         flags := strconv.Itoa(r.Flags)
         bytes := strconv.Itoa(len(r.Data))
 
-        conn.Write("VALUE " + k + " " + flags + " " + bytes + " $CAS")
+        conn.Write("VALUE " + k + " " + flags + " " + bytes)
         conn.Write(string(r.Data))
     }
     
