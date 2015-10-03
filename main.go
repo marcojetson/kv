@@ -11,6 +11,8 @@ func main() {
     s := server.NewServer(storage.MapStorage{}, c)
 
     s.Commands["set"]  = server.Set
+    s.Commands["add"]  = server.Add
+    s.Commands["replace"]  = server.Replace
     s.Commands["get"]  = server.Get
     s.Commands["gets"]  = server.Get
     s.Commands["delete"]  = server.Delete
