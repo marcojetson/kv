@@ -1,13 +1,5 @@
 package core
 
-type Command func (storage Storage, conn Conn, args []string) bool
-
-type Conn interface {
-    Read() (string, error)
-    Write(s string)
-    Close()
-}
-
 type Storage interface {
     Get(k string) (Value, bool)
     Delete(k string) bool
@@ -22,5 +14,6 @@ type Value struct {
 }
 
 type Config interface {
+    GetString(key string, def string) string
     GetInt(key string, def int) int
 }

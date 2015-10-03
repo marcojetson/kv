@@ -12,7 +12,7 @@ type Server struct {
     Protocol string
     Port int
     Version string
-    Commands map[string]core.Command
+    Commands map[string]Command
     Storage core.Storage
 }
 
@@ -48,7 +48,7 @@ func (s Server) serve(conn Conn) {
 
         command, ok := s.Commands[parts[0]]
 
-        if !ok || !command(s.Storage, conn, parts[1:]) {
+        if !ok || !command(s, conn, parts[1:]) {
             conn.Write("ERROR")
         }
     }
@@ -56,9 +56,10 @@ func (s Server) serve(conn Conn) {
 
 func NewServer(storage core.Storage, config core.Config) *Server {
     return &Server{
-        Protocol: "tcp",
+        Protocol: config.GetString("protocol", "tcp"),
         Port: config.GetInt("port", 11211),
-        Commands: map[string]core.Command{},
+        Version: config.GetString("version", "1.0"),
+        Commands: map[string]Command{},
         Storage: storage,
     }
 }

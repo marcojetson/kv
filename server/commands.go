@@ -1,11 +1,12 @@
-package commands
+package server
 
 import (
     "strconv"
-    "github.com/kv/kv/core"
 )
 
-func Set(storage core.Storage, conn core.Conn, args []string) bool {
+type Command func (server Server, conn Conn, args []string) bool
+
+func Set(server Server, conn Conn, args []string) bool {
     argc := len(args)
 
     if argc != 4 && argc != 5 {
@@ -26,7 +27,7 @@ func Set(storage core.Storage, conn core.Conn, args []string) bool {
         return false
     }
 
-    storage.Set(args[0], flags, expirationTime, []byte(data))
+    server.Storage.Set(args[0], flags, expirationTime, []byte(data))
 
     if argc == 4 {
         conn.Write("STORED")
@@ -35,13 +36,13 @@ func Set(storage core.Storage, conn core.Conn, args []string) bool {
     return true
 }
 
-func Get(storage core.Storage, conn core.Conn, args []string) bool {
+func Get(server Server, conn Conn, args []string) bool {
     if len(args) < 1 {
         return false
     }
 
     for _, k := range args {
-        r, ok := storage.Get(k)
+        r, ok := server.Storage.Get(k)
 
         if !ok {
             continue
@@ -59,14 +60,14 @@ func Get(storage core.Storage, conn core.Conn, args []string) bool {
     return true
 }
 
-func Delete(storage core.Storage, conn core.Conn, args []string) bool {
+func Delete(server Server, conn Conn, args []string) bool {
     argc := len(args)
 
     if argc != 1 && argc != 2 {
         return false
     }
 
-    r := storage.Delete(args[0])
+    r := server.Storage.Delete(args[0])
 
     if argc == 1 {
         if r {
@@ -79,14 +80,14 @@ func Delete(storage core.Storage, conn core.Conn, args []string) bool {
     return true
 }
 
-func FlushAll(storage core.Storage, conn core.Conn, args []string) bool {
+func FlushAll(server Server, conn Conn, args []string) bool {
     argc := len(args)
 
     if argc != 0 && argc != 1 {
         return false
     }
 
-    storage.FlushAll()
+    server.Storage.FlushAll()
 
     if argc == 0 {
         conn.Write("OK")
@@ -96,16 +97,16 @@ func FlushAll(storage core.Storage, conn core.Conn, args []string) bool {
 }
 
 
-func Version(storage core.Storage, conn core.Conn, args []string) bool {
+func Version(server Server, conn Conn, args []string) bool {
     if len(args) != 0 {
          return false
      }
 
-    conn.Write("VERSION x")
+    conn.Write("VERSION " + server.Version)
     return true
 }
 
-func Quit(storage core.Storage, conn core.Conn, args []string) bool {
+func Quit(server Server, conn Conn, args []string) bool {
     if len(args) != 0 {
          return false
      }
