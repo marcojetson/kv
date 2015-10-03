@@ -54,10 +54,10 @@ func (s Server) serve(conn Conn) {
     }
 }
 
-func NewServer(storage core.Storage) *Server {
+func NewServer(storage core.Storage, config core.Config) *Server {
     return &Server{
         Protocol: "tcp",
-        Port: 11211,
+        Port: config.GetInt("port", 11211),
         Commands: map[string]core.Command{},
         Storage: storage,
     }

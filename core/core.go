@@ -20,3 +20,7 @@ type Value struct {
     ExpirationTime int
     Data []byte
 }
+
+type Config interface {
+    GetInt(key string, def int) int
+}
