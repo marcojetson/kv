@@ -122,7 +122,7 @@ func Incr(server Server, conn Conn, args []string) bool {
 
     offset, _ := strconv.ParseUint(args[1], 10, 64)
 
-    v, found, valid := server.Storage.Incr(args[0], offset)
+    v, found, valid := server.Storage.Delta(args[0], false, offset)
 
     if !found {
         conn.Write("NOT_FOUND")
@@ -145,7 +145,7 @@ func Decr(server Server, conn Conn, args []string) bool {
 
     offset, _ := strconv.ParseUint(args[1], 10, 64)
 
-    v, found, valid := server.Storage.Decr(args[0], offset)
+    v, found, valid := server.Storage.Delta(args[0], true, offset)
 
     if !found {
         conn.Write("NOT_FOUND")

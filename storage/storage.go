@@ -43,7 +43,7 @@ func (m MapStorage) FlushAll() {
     }
 }
 
-func (m MapStorage) Incr(k string, offset uint64) (uint64, bool, bool) {
+func (m MapStorage) Delta(k string, negative bool, offset uint64) (uint64, bool, bool) {
     v, ok := m.Get(k)
 
     if !ok {
@@ -58,7 +58,11 @@ func (m MapStorage) Incr(k string, offset uint64) (uint64, bool, bool) {
         return 0, true, false
     }
 
-    i += offset
+    if negative {
+        i -= offset
+    } else {
+        i += offset
+    }
 
     v.Data = []byte(strconv.FormatUint(i, 10))
 
@@ -67,29 +71,6 @@ func (m MapStorage) Incr(k string, offset uint64) (uint64, bool, bool) {
     return i, true, true
 }
 
-func (m MapStorage) Decr(k string, offset uint64) (uint64, bool, bool) {
-    v, ok := m.Get(k)
-
-    if !ok {
-        return 0, false, false
-    }
-
-    data := v.Data
-
-    i, err := strconv.ParseUint(string(data), 10, 64)
-
-    if err != nil {
-        return 0, true, false
-    }
-
-    i -= offset
-
-    v.Data = []byte(strconv.FormatUint(i, 10))
-
-    m[k] = v
-
-    return i, true, true
-}
 
 func (m MapStorage) Touch(k string, expirationTime int) bool {
     v, ok := m.Get(k)

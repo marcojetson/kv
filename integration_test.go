@@ -102,7 +102,7 @@ func TestGetMulti(t *testing.T) {
     }
 }
 
-func TestIncr(t *testing.T) {
+func TestDelta(t *testing.T) {
     mc.Set(&memcache.Item{Key: "foo", Value: []byte("42")})
 
     v, err := mc.Increment("foo", 3)
@@ -123,6 +123,26 @@ func TestIncr(t *testing.T) {
 
     if string(s.Value) != "45" {
         t.Fatalf("Expecting get after increment to return 45")
+    }
+
+    v, err = mc.Decrement("foo", 5)
+
+    if err != nil {
+        t.Fatalf("Decrement foo returned error " + err.Error())
+    }
+
+    if v != 40 {
+        t.Fatalf("Expecting decrement to return 40")
+    }
+
+    s, err = mc.Get("foo")
+
+    if err != nil {
+        t.Fatalf("Get after increment returned error " + err.Error())
+    }
+
+    if string(s.Value) != "40" {
+        t.Fatalf("Expecting get after increment to return 40")
     }
 }
 
