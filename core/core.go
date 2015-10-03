@@ -9,6 +9,7 @@ type Storage interface {
     Touch(k string, expirationTime int) bool
     Append(k string, data []byte) bool
     Prepend(k string, data []byte) bool
+    GarbageCollect()
 }
 
 type Value struct {

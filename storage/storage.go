@@ -117,3 +117,9 @@ func (m MapStorage) Prepend(k string, data []byte) bool {
 
     return true
 }
+
+func (m MapStorage) GarbageCollect() {
+    for k := range m {
+        m.Get(k)
+    }
+}
