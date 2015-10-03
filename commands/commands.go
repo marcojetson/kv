@@ -14,8 +14,19 @@ func Set(storage core.Storage, conn core.Conn, args []string) bool {
 
     flags, _ := strconv.Atoi(args[1])
     expirationTime, _ := strconv.Atoi(args[2])
+    bytes, _ := strconv.Atoi(args[3])
 
-    storage.Set(args[0], flags, expirationTime, []byte("data"))
+    data, err := conn.Read()
+    if err != nil {
+        return false
+    }
+
+    if len(data) != bytes {
+        conn.Write("CLIENT_ERROR bad data chunk")
+        return false
+    }
+
+    storage.Set(args[0], flags, expirationTime, []byte(data))
 
     if argc == 4 {
         conn.Write("STORED")
@@ -36,7 +47,10 @@ func Get(storage core.Storage, conn core.Conn, args []string) bool {
             continue
         }
 
-        conn.Write("VALUE " + k)
+        flags := strconv.Itoa(r.Flags)
+        bytes := strconv.Itoa(len(r.Data))
+
+        conn.Write("VALUE " + k + " " + flags + " " + bytes + " $CAS")
         conn.Write(string(r.Data))
     }
     

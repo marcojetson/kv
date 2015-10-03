@@ -3,9 +3,9 @@ package core
 type Command func (storage Storage, conn Conn, args []string) bool
 
 type Conn interface {
-	Read() (string, error)
-	Write(s string)
-	Close()
+    Read() (string, error)
+    Write(s string)
+    Close()
 }
 
 type Storage interface {

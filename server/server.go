@@ -11,12 +11,13 @@ import (
 type Server struct {
     Protocol string
     Port int
+    Version string
     Commands map[string]core.Command
     Storage core.Storage
 }
 
-func (self Server) Start() bool {
-    server, err := net.Listen(self.Protocol, ":" + strconv.Itoa(self.Port))
+func (s Server) Start() bool {
+    server, err := net.Listen(s.Protocol, ":" + strconv.Itoa(s.Port))
     if err != nil {
         panic("Failed to start")
     }
@@ -27,31 +28,28 @@ func (self Server) Start() bool {
             continue
         }
 
-        go self.serve(conn)
+        go s.serve(Conn{
+            reader: bufio.NewReader(conn),
+            conn: conn,
+        })
     }
 
     return true
 }
 
-func (self Server) serve(conn net.Conn) {
-    xconn := Conn{
-        buffer: bufio.NewReader(conn),
-        conn: conn,
-    }
-
+func (s Server) serve(conn Conn) {
     for {
-        line, err := xconn.Read()
+        line, err := conn.Read()
         if err != nil {
             return
         }
 
-        line = strings.TrimSpace(line)
         parts := strings.Split(line, " ")
 
-        command, ok := self.Commands[parts[0]]
+        command, ok := s.Commands[parts[0]]
 
-        if !ok || !command(self.Storage, xconn, parts[1:]) {
-            xconn.Write("ERROR")
+        if !ok || !command(s.Storage, conn, parts[1:]) {
+            conn.Write("ERROR")
         }
     }
 }
@@ -63,21 +61,4 @@ func NewServer(storage core.Storage) *Server {
         Commands: map[string]core.Command{},
         Storage: storage,
     }
-}
-
-type Conn struct {
-    buffer *bufio.Reader
-    conn net.Conn
-}
-
-func (c Conn) Read() (string, error) {
-    return c.buffer.ReadString('\n')
-}
-
-func (c Conn) Write(s string) {
-    c.conn.Write([]byte(s + "\r\n"))
-}
-
-func (c Conn) Close() {
-    c.conn.Close()
 }
