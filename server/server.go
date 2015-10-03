@@ -19,7 +19,7 @@ type Server struct {
 func (s Server) Start() bool {
     server, err := net.Listen(s.Protocol, ":" + strconv.Itoa(s.Port))
     if err != nil {
-        panic("Failed to start")
+        panic("Failed to start " + err.Error())
     }
 
     for {   
