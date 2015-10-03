@@ -102,6 +102,30 @@ func TestGetMulti(t *testing.T) {
     }
 }
 
+func TestIncr(t *testing.T) {
+    mc.Set(&memcache.Item{Key: "foo", Value: []byte("42")})
+
+    v, err := mc.Increment("foo", 3)
+
+    if err != nil {
+        t.Fatalf("Increment foo returned error " + err.Error())
+    }
+
+    if v != 45 {
+        t.Fatalf("Expecting increment to return 45")
+    }
+
+    s, err := mc.Get("foo")
+
+    if err != nil {
+        t.Fatalf("Get after increment returned error " + err.Error())
+    }
+
+    if string(s.Value) != "45" {
+        t.Fatalf("Expecting get after increment to return 45")
+    }
+}
+
 func TestFlush(t *testing.T) {
     err := mc.FlushAll()
 
