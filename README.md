@@ -1,7 +1,7 @@
 kv
 ==
 
-A key value store
+Memcached implementation in Go.
 
 [![Build Status](https://travis-ci.org/kv/kv.svg?branch=master)](https://travis-ci.org/kv/kv)
 
