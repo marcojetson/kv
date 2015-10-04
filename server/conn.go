@@ -1,27 +1,27 @@
 package server
 
 import (
-    "bufio"
-    "net"
-    "strings"
+	"bufio"
+	"net"
+	"strings"
 )
 
 type Conn struct {
-    reader *bufio.Reader
-    conn net.Conn
+	reader *bufio.Reader
+	conn   net.Conn
 }
 
 func (c Conn) Read() (string, error) {
-    line, err := c.reader.ReadString('\n')
-    line = strings.TrimSpace(line)
+	line, err := c.reader.ReadString('\n')
+	line = strings.TrimSpace(line)
 
-    return line, err
+	return line, err
 }
 
 func (c Conn) Write(s string) {
-    c.conn.Write([]byte(s + "\r\n"))
+	c.conn.Write([]byte(s + "\r\n"))
 }
 
 func (c Conn) Close() {
-    c.conn.Close()
+	c.conn.Close()
 }

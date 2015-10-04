@@ -53,9 +53,9 @@ func Add(server Server, conn Conn, args []string) bool {
 	}
 
 	if _, ok := server.Storage.Get(args[0]); ok {
-        conn.Write("NOT_STORED")
-        return true
-    }
+		conn.Write("NOT_STORED")
+		return true
+	}
 
 	if len(data) != bytes {
 		conn.Write("CLIENT_ERROR bad data chunk")
@@ -93,9 +93,9 @@ func Replace(server Server, conn Conn, args []string) bool {
 	}
 
 	if _, ok := server.Storage.Get(args[0]); !ok {
-        conn.Write("NOT_STORED")
-        return true
-    }
+		conn.Write("NOT_STORED")
+		return true
+	}
 
 	server.Storage.Set(args[0], flags, expirationTime, []byte(data))
 
@@ -126,9 +126,9 @@ func Append(server Server, conn Conn, args []string) bool {
 	}
 
 	if ok := server.Storage.Append(args[0], []byte(data)); !ok {
-        conn.Write("NOT_STORED")
-        return true
-    }
+		conn.Write("NOT_STORED")
+		return true
+	}
 
 	if argc == 4 {
 		conn.Write("STORED")
@@ -157,9 +157,9 @@ func Prepend(server Server, conn Conn, args []string) bool {
 	}
 
 	if ok := server.Storage.Prepend(args[0], []byte(data)); !ok {
-        conn.Write("NOT_STORED")
-        return true
-    }
+		conn.Write("NOT_STORED")
+		return true
+	}
 
 	if argc == 4 {
 		conn.Write("STORED")
