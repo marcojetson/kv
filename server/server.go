@@ -10,12 +10,12 @@ import (
 )
 
 type Server struct {
-	Protocol   string
-	Port       int
-	Version    string
-	GCInterval time.Duration
-	Commands   map[string]Command
-	Storage    core.Storage
+	Protocol     string
+	Port         int
+	DumpInterval time.Duration
+	Path         string
+	Commands     map[string]Command
+	Storage      core.Storage
 }
 
 func (s Server) Start() bool {
@@ -24,12 +24,9 @@ func (s Server) Start() bool {
 		panic("Failed to start " + err.Error())
 	}
 
-	if s.GCInterval > 0 {
+	if s.DumpInterval > 0 {
 		go func() {
-			for {
-				s.Storage.GarbageCollect()
-				time.Sleep(s.GCInterval)
-			}
+			// @TODO implement
 		}()
 	}
 
@@ -67,11 +64,11 @@ func (s Server) serve(conn Conn) {
 
 func NewServer(storage core.Storage, config core.Config) *Server {
 	return &Server{
-		Protocol:   config.GetString("protocol", "tcp"),
-		Port:       config.GetInt("port", 11211),
-		Version:    config.GetString("version", "1.0"),
-		GCInterval: time.Duration(config.GetInt("gc", 900)) * time.Second,
-		Commands:   map[string]Command{},
-		Storage:    storage,
+		Protocol:     config.GetString("protocol", "tcp"),
+		Port:         config.GetInt("port", 1001),
+		DumpInterval: time.Duration(config.GetInt("dump", 0)) * time.Second,
+		Path:         config.GetString("path", "/var/data/kv"),
+		Commands:     map[string]Command{},
+		Storage:      storage,
 	}
 }
