@@ -1,26 +1,10 @@
 kv
 ==
 
-A naive Memcached implementation in Go.
+In memory object cache
 
 [![Build Status](https://travis-ci.org/kv/kv.svg?branch=master)](https://travis-ci.org/kv/kv)
 
-## Supported commands
-
-- [x] get
-- [x] gets
-- [x] set
-- [x] add
-- [x] replace
-- [x] append
-- [x] prepend
-- [x] incr
-- [x] decr
-- [x] touch
-- [x] delete
-- [x] flush_all
-- [x] version
-- [x] quit
  
 ```
                                       %((((((((((((((#&
