@@ -4,7 +4,6 @@ import (
 	"flag"
 	"github.com/kv/kv/config"
 	"github.com/kv/kv/server"
-	"github.com/kv/kv/storage"
 )
 
 func main() {
@@ -12,7 +11,7 @@ func main() {
 	flag.Parse()
 
 	c := config.ReadConfig(*f)
-	s := server.NewServer(new(storage.MapStorage), c)
+	s := server.NewServer(c)
 
 	s.Commands["add"] = server.Add
 	s.Commands["count"] = server.Count

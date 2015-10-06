@@ -27,7 +27,7 @@ func Count(server Server, conn Conn, args []string) bool {
 	if len(args) != 1 {
 		return false
 	}
-	
+
 	criteria, ok := jsonDecode(args[0])
 	if !ok {
 		return false
@@ -42,7 +42,7 @@ func Get(server Server, conn Conn, args []string) bool {
 	if len(args) != 1 {
 		return false
 	}
-	
+
 	criteria, ok := jsonDecode(args[0])
 	if !ok {
 		return false
@@ -67,7 +67,7 @@ func Delete(server Server, conn Conn, args []string) bool {
 	if len(args) != 1 {
 		return false
 	}
-	
+
 	criteria, ok := jsonDecode(args[0])
 	if !ok {
 		return false
@@ -80,7 +80,7 @@ func Delete(server Server, conn Conn, args []string) bool {
 
 func DeIndex(server Server, conn Conn, args []string) bool {
 	argc := len(args)
-	
+
 	if argc != 1 && argc != 2 {
 		return false
 	}
@@ -98,7 +98,7 @@ func DeIndex(server Server, conn Conn, args []string) bool {
 
 func Index(server Server, conn Conn, args []string) bool {
 	argc := len(args)
-	
+
 	if argc != 1 && argc != 2 {
 		return false
 	}

@@ -1,29 +1,29 @@
 package storage
 
-type MapStorage []interface{}
+type Storage []interface{}
 
-func (m *MapStorage) Add(object interface{}) {
+func (m *Storage) Add(object interface{}) {
 	*m = append(*m, object)
 }
 
-func (m MapStorage) Count(criteria interface{}) int {
+func (m Storage) Count(criteria interface{}) int {
 	return 0
 }
 
-func (m MapStorage) Get(criteria interface{}) []interface{} {
+func (m Storage) Get(criteria interface{}) []interface{} {
 	return m
 }
 
-func (m MapStorage) Delete(criteria interface{}) int {
+func (m Storage) Delete(criteria interface{}) int {
 	return 0
 }
 
-func (m MapStorage) DeIndex(key string) {
+func (m Storage) DeIndex(key string) {
 }
 
-func (m MapStorage) Index(key string) {
+func (m Storage) Index(key string) {
 }
 
-func (m MapStorage) Set(criteria interface{}, values interface{}) int {
+func (m Storage) Set(criteria interface{}, values interface{}) int {
 	return 0
 }

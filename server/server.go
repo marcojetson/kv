@@ -2,7 +2,8 @@ package server
 
 import (
 	"bufio"
-	"github.com/kv/kv/core"
+	"github.com/kv/kv/config"
+	"github.com/kv/kv/storage"
 	"net"
 	"strconv"
 	"strings"
@@ -15,7 +16,7 @@ type Server struct {
 	DumpInterval time.Duration
 	Path         string
 	Commands     map[string]Command
-	Storage      core.Storage
+	Storage      *storage.Storage
 	Version      string
 }
 
@@ -63,14 +64,14 @@ func (s Server) serve(conn Conn) {
 	}
 }
 
-func NewServer(storage core.Storage, config core.Config) *Server {
+func NewServer(config config.Config) *Server {
 	return &Server{
 		Protocol:     config.GetString("protocol", "tcp"),
 		Port:         config.GetInt("port", 11211),
 		DumpInterval: time.Duration(config.GetInt("dump", 0)) * time.Second,
 		Path:         config.GetString("path", "/var/data/kv"),
 		Commands:     map[string]Command{},
-		Storage:      storage,
+		Storage:      new(storage.Storage),
 		Version:      "0.1b",
 	}
 }
