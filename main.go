@@ -1,14 +1,17 @@
 package main
 
 import (
+	"flag"
 	"github.com/kv/kv/config"
 	"github.com/kv/kv/server"
-	"github.com/kv/kv/storage"
 )
 
 func main() {
-	c := config.ReadConfig("kv.conf")
-	s := server.NewServer(storage.MapStorage{}, c)
+	f := flag.String("c", "kv.conf", "Configuration file")
+	flag.Parse()
+
+	c := config.ReadConfig(*f)
+	s := server.NewServer(c)
 
 	s.Commands["add"] = server.Add
 	s.Commands["count"] = server.Count
@@ -16,8 +19,10 @@ func main() {
 	s.Commands["delete"] = server.Delete
 	s.Commands["deindex"] = server.DeIndex
 	s.Commands["index"] = server.Index
+	s.Commands["ping"] = server.Ping
 	s.Commands["set"] = server.Set
 	s.Commands["quit"] = server.Quit
+	s.Commands["version"] = server.Version
 
 	s.Start()
 }
