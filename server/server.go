@@ -16,6 +16,7 @@ type Server struct {
 	Path         string
 	Commands     map[string]Command
 	Storage      core.Storage
+	Version      string
 }
 
 func (s Server) Start() bool {
@@ -57,7 +58,7 @@ func (s Server) serve(conn Conn) {
 		command, ok := s.Commands[parts[0]]
 
 		if !ok || !command(s, conn, parts[1:]) {
-			conn.Write("ERROR")
+			conn.Write(response_error)
 		}
 	}
 }
@@ -65,10 +66,11 @@ func (s Server) serve(conn Conn) {
 func NewServer(storage core.Storage, config core.Config) *Server {
 	return &Server{
 		Protocol:     config.GetString("protocol", "tcp"),
-		Port:         config.GetInt("port", 1001),
+		Port:         config.GetInt("port", 11211),
 		DumpInterval: time.Duration(config.GetInt("dump", 0)) * time.Second,
 		Path:         config.GetString("path", "/var/data/kv"),
 		Commands:     map[string]Command{},
 		Storage:      storage,
+		Version:      "0.1b",
 	}
 }
