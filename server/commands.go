@@ -49,7 +49,13 @@ func Get(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	items := server.Storage.Get(criteria)
+	items, valid := server.Storage.Get(criteria)
+
+	if !valid {
+		conn.Write(response_error_no_index)
+		return true
+	}
+
 	for _, item := range items {
 		b, err := json.Marshal(item)
 

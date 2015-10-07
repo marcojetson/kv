@@ -10,16 +10,64 @@ type Storage struct {
 	indexes map[string]map[string][]int
 }
 
-func (m *Storage) Add(object Object) {
-	m.items = append(m.items, object)
+func (m *Storage) Add(j Object) {
+	i := len(m.items)
+	m.items = append(m.items, j)
+
+	for k, _ := range m.indexes {
+		v, ok := j.Get(k)
+		if !ok {
+			continue
+		}
+
+		h, _ := json.Marshal(v)
+		m.indexes[k][string(h)] = append(m.indexes[k][string(h)], i)
+	}
 }
 
 func (m Storage) Count(criteria Object) int {
 	return 0
 }
 
-func (m Storage) Get(criteria Object) []Object {
-	return m.items
+func (m Storage) Get(criteria Object) ([]Object, bool) {
+	for k, _ := range criteria {
+		if _, ok := m.indexes[k]; !ok {
+			// invalid index found
+			return nil, false
+		}
+	}
+
+	r := []Object{}
+
+	os := map[int]int{}
+	for k, v := range criteria {
+		h, _ := json.Marshal(v)
+		is, ok := m.indexes[k][string(h)]
+
+		if !ok || len(is) == 0 {
+			// empty index, no need to continue
+			return r, true
+		}
+
+		// count i ocurrences
+		for _, i := range is {
+			if _, ok := os[i]; !ok {
+				os[i] = 0
+			}
+
+			os[i]++
+		}
+	}
+
+	// keep only the ones where ocurrences equals criteria count
+	e := len(criteria)
+	for i, o := range os {
+		if e == o {
+			r = append(r, m.items[i])
+		}
+	}
+
+	return r, true
 }
 
 func (m Storage) Delete(criteria Object) int {
@@ -78,7 +126,7 @@ func (o Object) Get(k string) (interface{}, bool) {
 	x = o
 
 	for _, p := range ps {
-		c, valid := x.(map[string]interface{})
+		c, valid := x.(Object)
 		if !valid {
 			return nil, false
 		}
