@@ -10,16 +10,33 @@ type Storage struct {
 	indexes map[string]map[string][]int
 }
 
-func (m *Storage) Add(object Object) {
-	m.items = append(m.items, object)
+func (m *Storage) Add(j Object) {
+	i := len(m.items)
+	m.items = append(m.items, j)
+
+	for k, _ := range m.indexes {
+		m.addToIndex(k, i)
+	}
 }
 
 func (m Storage) Count(criteria Object) int {
 	return 0
 }
 
-func (m Storage) Get(criteria Object) []Object {
-	return m.items
+func (m Storage) Get(q Object) ([]Object, bool) {
+	for k, _ := range q {
+		if _, ok := m.indexes[k]; !ok {
+			// invalid index found
+			return nil, false
+		}
+	}
+
+	r := []Object{}
+	for _, i := range m.filter(q) {
+		r = append(r, m.items[i])
+	}
+
+	return r, true
 }
 
 func (m Storage) Delete(criteria Object) int {
@@ -37,14 +54,8 @@ func (m *Storage) Index(k string) {
 
 	m.indexes[k] = map[string][]int{}
 
-	for i, j := range m.items {
-		v, ok := j.Get(k)
-		if !ok {
-			continue
-		}
-
-		h, _ := json.Marshal(v)
-		m.indexes[k][string(h)] = append(m.indexes[k][string(h)], i)
+	for i, _ := range m.items {
+		m.addToIndex(k, i)
 	}
 }
 
@@ -59,6 +70,52 @@ func (m Storage) Indexes() map[string]int {
 
 func (m Storage) Set(criteria Object, values Object) int {
 	return 0
+}
+
+func addToIndex(k string, j Object) {
+
+}
+
+func (m *Storage) addToIndex(k string, i int) {
+	v, ok := m.items[i].Get(k)
+	if !ok {
+		return
+	}
+
+	h, _ := json.Marshal(v)
+	m.indexes[k][string(h)] = append(m.indexes[k][string(h)], i)
+}
+
+func (m Storage) filter(q Object) []int {
+	is := []int{}
+
+	os := map[int]int{}
+	for k, v := range q {
+		h, _ := json.Marshal(v)
+		is, ok := m.indexes[k][string(h)]
+
+		if !ok || len(is) == 0 {
+			return is
+		}
+
+		// count i ocurrences
+		for _, i := range is {
+			if _, ok := os[i]; !ok {
+				os[i] = 0
+			}
+
+			os[i]++
+		}
+	}
+
+	e := len(q)
+	for i, o := range os {
+		if e == o {
+			is = append(is, i)
+		}
+	}
+
+	return is
 }
 
 func NewStorage() *Storage {
@@ -78,7 +135,7 @@ func (o Object) Get(k string) (interface{}, bool) {
 	x = o
 
 	for _, p := range ps {
-		c, valid := x.(map[string]interface{})
+		c, valid := x.(Object)
 		if !valid {
 			return nil, false
 		}
