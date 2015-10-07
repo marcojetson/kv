@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/kv/kv/storage"
 	"strconv"
 )
 
@@ -13,7 +14,7 @@ func Add(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	object, ok := jsonDecode(args[0])
+	object, ok := storage.NewObject(args[0])
 	if !ok {
 		return false
 	}
@@ -28,7 +29,7 @@ func Count(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	criteria, ok := jsonDecode(args[0])
+	criteria, ok := storage.NewObject(args[0])
 	if !ok {
 		return false
 	}
@@ -43,7 +44,7 @@ func Get(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	criteria, ok := jsonDecode(args[0])
+	criteria, ok := storage.NewObject(args[0])
 	if !ok {
 		return false
 	}
@@ -59,7 +60,7 @@ func Get(server Server, conn Conn, args []string) bool {
 		conn.Write(string(b))
 	}
 
-	conn.Write("EOF")
+	conn.Write(response_end)
 	return true
 }
 
@@ -68,7 +69,7 @@ func Delete(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	criteria, ok := jsonDecode(args[0])
+	criteria, ok := storage.NewObject(args[0])
 	if !ok {
 		return false
 	}
@@ -93,6 +94,8 @@ func DeIndex(server Server, conn Conn, args []string) bool {
 		conn.Write(response_success)
 	}
 
+	server.DumpIndexes()
+
 	return true
 }
 
@@ -111,6 +114,21 @@ func Index(server Server, conn Conn, args []string) bool {
 		conn.Write(response_success)
 	}
 
+	server.DumpIndexes()
+
+	return true
+}
+
+func Indexes(server Server, conn Conn, args []string) bool {
+	if len(args) != 0 {
+		return false
+	}
+
+	for index, size := range server.Storage.Indexes() {
+		conn.Write("KEY " + index + " " + strconv.Itoa(size))
+	}
+
+	conn.Write(response_end)
 	return true
 }
 
@@ -137,12 +155,12 @@ func Set(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	criteria, ok := jsonDecode(args[0])
+	criteria, ok := storage.NewObject(args[0])
 	if !ok {
 		return false
 	}
 
-	values, ok2 := jsonDecode(args[1])
+	values, ok2 := storage.NewObject(args[1])
 	if !ok2 {
 		return false
 	}
@@ -159,10 +177,4 @@ func Version(server Server, conn Conn, args []string) bool {
 
 	conn.Write("VERSION " + server.Version)
 	return true
-}
-
-func jsonDecode(s string) (interface{}, bool) {
-	var v interface{}
-	err := json.Unmarshal([]byte(s), &v)
-	return v, err == nil
 }
