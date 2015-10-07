@@ -94,7 +94,7 @@ func (s Server) serve(conn Conn) {
 func NewServer(config config.Config) *Server {
 	return &Server{
 		Protocol:     config.GetString("protocol", "tcp"),
-		Port:         config.GetInt("port", 11211),
+		Port:         config.GetInt("port", 12626),
 		DumpInterval: time.Duration(config.GetInt("dump", 0)) * time.Second,
 		Path:         config.GetString("path", "/var/data/kv"),
 		Commands:     map[string]Command{},

@@ -1,4 +1,4 @@
 protocol=tcp
-port=1001
+port=12626
 dump=0
 path=/var/data/kv
