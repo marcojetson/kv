@@ -2,9 +2,12 @@ package server
 
 import (
 	"bufio"
+	"encoding/json"
 	"github.com/kv/kv/config"
 	"github.com/kv/kv/storage"
+	"io/ioutil"
 	"net"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -47,6 +50,30 @@ func (s Server) Start() bool {
 	return true
 }
 
+func (s Server) RestoreIndexes() {
+	f, err := ioutil.ReadFile(path.Join(s.Path, file_indexes))
+	if err != nil {
+		return
+	}
+
+	var ks []string
+	json.Unmarshal(f, &ks)
+	for _, k := range ks {
+		s.Storage.Index(k)
+	}
+}
+
+func (s Server) DumpIndexes() {
+	ks := []string{}
+
+	for k, _ := range s.Storage.Indexes() {
+		ks = append(ks, k)
+	}
+
+	j, _ := json.Marshal(ks)
+	ioutil.WriteFile(path.Join(s.Path, file_indexes), j, 0644)
+}
+
 func (s Server) serve(conn Conn) {
 	for {
 		line, err := conn.Read()
@@ -71,7 +98,7 @@ func NewServer(config config.Config) *Server {
 		DumpInterval: time.Duration(config.GetInt("dump", 0)) * time.Second,
 		Path:         config.GetString("path", "/var/data/kv"),
 		Commands:     map[string]Command{},
-		Storage:      new(storage.Storage),
+		Storage:      storage.NewStorage(),
 		Version:      "0.1b",
 	}
 }
