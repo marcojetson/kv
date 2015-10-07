@@ -46,15 +46,19 @@ func (m Storage) Get(q Object) ([]Object, bool) {
 }
 
 func (m *Storage) Delete(q Object) (int, bool) {
-	is, ok := m.filter(q)
+	ids, ok := m.filter(q)
 
 	if !ok {
 		return 0, false
 	}
 
-	// @TODO delete
+	for _, id := range ids {
+		delete(m.items, id)
+	}
 
-	return len(is), true
+	// @TODO remove from indexes
+
+	return len(ids), true
 }
 
 func (m Storage) DeIndex(key string) {
@@ -101,41 +105,41 @@ func (m *Storage) addToIndex(k string, id int) {
 }
 
 func (m Storage) filter(q Object) ([]int, bool) {
-	is := []int{}
+	r := []int{}
 
 	for k, _ := range q {
 		if _, ok := m.indexes[k]; !ok {
-			return is, false
+			return r, false
 		}
 	}
 
 	os := map[int]int{}
 	for k, v := range q {
 		h, _ := json.Marshal(v)
-		is, ok := m.indexes[k][string(h)]
+		ids, ok := m.indexes[k][string(h)]
 
-		if !ok || len(is) == 0 {
-			return is, true
+		if !ok || len(ids) == 0 {
+			return r, true
 		}
 
 		// count i ocurrences
-		for _, i := range is {
-			if _, ok := os[i]; !ok {
-				os[i] = 0
+		for _, id := range ids {
+			if _, ok := os[id]; !ok {
+				os[id] = 0
 			}
 
-			os[i]++
+			os[id]++
 		}
 	}
 
 	e := len(q)
-	for i, o := range os {
+	for id, o := range os {
 		if e == o {
-			is = append(is, i)
+			r = append(r, id)
 		}
 	}
 
-	return is, true
+	return r, true
 }
 
 func NewStorage() *Storage {
