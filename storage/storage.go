@@ -15,13 +15,7 @@ func (m *Storage) Add(j Object) {
 	m.items = append(m.items, j)
 
 	for k, _ := range m.indexes {
-		v, ok := j.Get(k)
-		if !ok {
-			continue
-		}
-
-		h, _ := json.Marshal(v)
-		m.indexes[k][string(h)] = append(m.indexes[k][string(h)], i)
+		m.addToIndex(k, i)
 	}
 }
 
@@ -29,8 +23,8 @@ func (m Storage) Count(criteria Object) int {
 	return 0
 }
 
-func (m Storage) Get(criteria Object) ([]Object, bool) {
-	for k, _ := range criteria {
+func (m Storage) Get(q Object) ([]Object, bool) {
+	for k, _ := range q {
 		if _, ok := m.indexes[k]; !ok {
 			// invalid index found
 			return nil, false
@@ -38,33 +32,8 @@ func (m Storage) Get(criteria Object) ([]Object, bool) {
 	}
 
 	r := []Object{}
-
-	os := map[int]int{}
-	for k, v := range criteria {
-		h, _ := json.Marshal(v)
-		is, ok := m.indexes[k][string(h)]
-
-		if !ok || len(is) == 0 {
-			// empty index, no need to continue
-			return r, true
-		}
-
-		// count i ocurrences
-		for _, i := range is {
-			if _, ok := os[i]; !ok {
-				os[i] = 0
-			}
-
-			os[i]++
-		}
-	}
-
-	// keep only the ones where ocurrences equals criteria count
-	e := len(criteria)
-	for i, o := range os {
-		if e == o {
-			r = append(r, m.items[i])
-		}
+	for _, i := range m.filter(q) {
+		r = append(r, m.items[i])
 	}
 
 	return r, true
@@ -85,14 +54,8 @@ func (m *Storage) Index(k string) {
 
 	m.indexes[k] = map[string][]int{}
 
-	for i, j := range m.items {
-		v, ok := j.Get(k)
-		if !ok {
-			continue
-		}
-
-		h, _ := json.Marshal(v)
-		m.indexes[k][string(h)] = append(m.indexes[k][string(h)], i)
+	for i, _ := range m.items {
+		m.addToIndex(k, i)
 	}
 }
 
@@ -107,6 +70,52 @@ func (m Storage) Indexes() map[string]int {
 
 func (m Storage) Set(criteria Object, values Object) int {
 	return 0
+}
+
+func addToIndex(k string, j Object) {
+
+}
+
+func (m *Storage) addToIndex(k string, i int) {
+	v, ok := m.items[i].Get(k)
+	if !ok {
+		return
+	}
+
+	h, _ := json.Marshal(v)
+	m.indexes[k][string(h)] = append(m.indexes[k][string(h)], i)
+}
+
+func (m Storage) filter(q Object) []int {
+	is := []int{}
+
+	os := map[int]int{}
+	for k, v := range q {
+		h, _ := json.Marshal(v)
+		is, ok := m.indexes[k][string(h)]
+
+		if !ok || len(is) == 0 {
+			return is
+		}
+
+		// count i ocurrences
+		for _, i := range is {
+			if _, ok := os[i]; !ok {
+				os[i] = 0
+			}
+
+			os[i]++
+		}
+	}
+
+	e := len(q)
+	for i, o := range os {
+		if e == o {
+			is = append(is, i)
+		}
+	}
+
+	return is
 }
 
 func NewStorage() *Storage {
