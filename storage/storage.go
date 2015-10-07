@@ -53,10 +53,12 @@ func (m *Storage) Delete(q Object) (int, bool) {
 	}
 
 	for _, id := range ids {
+		for k, _ := range m.indexes {
+			m.removeFromIndex(k, id)
+		}
+
 		delete(m.items, id)
 	}
-
-	// @TODO remove from indexes
 
 	return len(ids), true
 }
@@ -90,8 +92,19 @@ func (m Storage) Set(q Object, values Object) int {
 	return 0
 }
 
-func addToIndex(k string, j Object) {
+func (m *Storage) removeFromIndex(k string, id int) {
+	v, ok := m.items[id].Get(k)
+	if !ok {
+		return
+	}
 
+	h, _ := json.Marshal(v)
+	for i, t := range m.indexes[k][string(h)] {
+		if id == t {
+			m.indexes[k][string(h)] = append(m.indexes[k][string(h)][:i], m.indexes[k][string(h)][i+1:]...)
+			return
+		}
+	}
 }
 
 func (m *Storage) addToIndex(k string, id int) {
