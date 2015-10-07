@@ -15,6 +15,7 @@ func Add(server Server, conn Conn, args []string) bool {
 	}
 
 	object, ok := storage.NewObject(args[0])
+
 	if !ok {
 		return false
 	}
@@ -29,13 +30,20 @@ func Count(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	criteria, ok := storage.NewObject(args[0])
+	q, ok := storage.NewObject(args[0])
+
 	if !ok {
 		return false
 	}
 
-	count := server.Storage.Count(criteria)
-	conn.Write(fmt.Sprintf(response_success_arg, strconv.Itoa(count)))
+	c, valid := server.Storage.Count(q)
+
+	if !valid {
+		conn.Write(response_error_no_index)
+		return true
+	}
+
+	conn.Write(fmt.Sprintf(response_success_arg, strconv.Itoa(c)))
 	return true
 }
 
@@ -44,12 +52,13 @@ func Get(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	criteria, ok := storage.NewObject(args[0])
+	q, ok := storage.NewObject(args[0])
+
 	if !ok {
 		return false
 	}
 
-	items, valid := server.Storage.Get(criteria)
+	items, valid := server.Storage.Get(q)
 
 	if !valid {
 		conn.Write(response_error_no_index)
@@ -75,13 +84,20 @@ func Delete(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	criteria, ok := storage.NewObject(args[0])
+	q, ok := storage.NewObject(args[0])
+
 	if !ok {
 		return false
 	}
 
-	count := server.Storage.Delete(criteria)
-	conn.Write(fmt.Sprintf(response_success_arg, strconv.Itoa(count)))
+	c, valid := server.Storage.Delete(q)
+
+	if !valid {
+		conn.Write(response_error_no_index)
+		return true
+	}
+
+	conn.Write(fmt.Sprintf(response_success_arg, strconv.Itoa(c)))
 	return true
 }
 
@@ -161,17 +177,19 @@ func Set(server Server, conn Conn, args []string) bool {
 		return false
 	}
 
-	criteria, ok := storage.NewObject(args[0])
+	q, ok := storage.NewObject(args[0])
+
 	if !ok {
 		return false
 	}
 
 	values, ok2 := storage.NewObject(args[1])
+
 	if !ok2 {
 		return false
 	}
 
-	server.Storage.Set(criteria, values)
+	server.Storage.Set(q, values)
 
 	return true
 }

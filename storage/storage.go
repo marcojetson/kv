@@ -19,28 +19,41 @@ func (m *Storage) Add(j Object) {
 	}
 }
 
-func (m Storage) Count(criteria Object) int {
-	return 0
+func (m Storage) Count(q Object) (int, bool) {
+	is, ok := m.filter(q)
+
+	if !ok {
+		return 0, false
+	}
+
+	return len(is), true
 }
 
 func (m Storage) Get(q Object) ([]Object, bool) {
-	for k, _ := range q {
-		if _, ok := m.indexes[k]; !ok {
-			// invalid index found
-			return nil, false
-		}
+	r := []Object{}
+	is, ok := m.filter(q)
+
+	if !ok {
+		return r, false
 	}
 
-	r := []Object{}
-	for _, i := range m.filter(q) {
+	for _, i := range is {
 		r = append(r, m.items[i])
 	}
 
 	return r, true
 }
 
-func (m Storage) Delete(criteria Object) int {
-	return 0
+func (m *Storage) Delete(q Object) (int, bool) {
+	is, ok := m.filter(q)
+
+	if !ok {
+		return 0, false
+	}
+
+	// @TODO delete
+
+	return len(is), true
 }
 
 func (m Storage) DeIndex(key string) {
@@ -68,7 +81,7 @@ func (m Storage) Indexes() map[string]int {
 	return r
 }
 
-func (m Storage) Set(criteria Object, values Object) int {
+func (m Storage) Set(q Object, values Object) int {
 	return 0
 }
 
@@ -86,8 +99,14 @@ func (m *Storage) addToIndex(k string, i int) {
 	m.indexes[k][string(h)] = append(m.indexes[k][string(h)], i)
 }
 
-func (m Storage) filter(q Object) []int {
+func (m Storage) filter(q Object) ([]int, bool) {
 	is := []int{}
+
+	for k, _ := range q {
+		if _, ok := m.indexes[k]; !ok {
+			return is, false
+		}
+	}
 
 	os := map[int]int{}
 	for k, v := range q {
@@ -95,7 +114,7 @@ func (m Storage) filter(q Object) []int {
 		is, ok := m.indexes[k][string(h)]
 
 		if !ok || len(is) == 0 {
-			return is
+			return is, true
 		}
 
 		// count i ocurrences
@@ -115,7 +134,7 @@ func (m Storage) filter(q Object) []int {
 		}
 	}
 
-	return is
+	return is, true
 }
 
 func NewStorage() *Storage {
