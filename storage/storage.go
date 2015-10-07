@@ -6,16 +6,17 @@ import (
 )
 
 type Storage struct {
-	items   []Object
+	id      int
+	items   map[int]Object
 	indexes map[string]map[string][]int
 }
 
 func (m *Storage) Add(j Object) {
-	i := len(m.items)
-	m.items = append(m.items, j)
+	m.id++
+	m.items[m.id] = j
 
 	for k, _ := range m.indexes {
-		m.addToIndex(k, i)
+		m.addToIndex(k, m.id)
 	}
 }
 
@@ -31,14 +32,14 @@ func (m Storage) Count(q Object) (int, bool) {
 
 func (m Storage) Get(q Object) ([]Object, bool) {
 	r := []Object{}
-	is, ok := m.filter(q)
+	ids, ok := m.filter(q)
 
 	if !ok {
 		return r, false
 	}
 
-	for _, i := range is {
-		r = append(r, m.items[i])
+	for _, id := range ids {
+		r = append(r, m.items[id])
 	}
 
 	return r, true
@@ -67,8 +68,8 @@ func (m *Storage) Index(k string) {
 
 	m.indexes[k] = map[string][]int{}
 
-	for i, _ := range m.items {
-		m.addToIndex(k, i)
+	for id, _ := range m.items {
+		m.addToIndex(k, id)
 	}
 }
 
@@ -89,14 +90,14 @@ func addToIndex(k string, j Object) {
 
 }
 
-func (m *Storage) addToIndex(k string, i int) {
-	v, ok := m.items[i].Get(k)
+func (m *Storage) addToIndex(k string, id int) {
+	v, ok := m.items[id].Get(k)
 	if !ok {
 		return
 	}
 
 	h, _ := json.Marshal(v)
-	m.indexes[k][string(h)] = append(m.indexes[k][string(h)], i)
+	m.indexes[k][string(h)] = append(m.indexes[k][string(h)], id)
 }
 
 func (m Storage) filter(q Object) ([]int, bool) {
@@ -139,7 +140,8 @@ func (m Storage) filter(q Object) ([]int, bool) {
 
 func NewStorage() *Storage {
 	return &Storage{
-		items:   []Object{},
+		id:      0,
+		items:   map[int]Object{},
 		indexes: map[string]map[string][]int{},
 	}
 }
